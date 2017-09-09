@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path"
 	"regexp"
 	dbg "runtime/debug"
 	"strconv"
@@ -11,9 +12,14 @@ import (
 )
 
 var colors = []int{6, 2, 3, 4, 5, 1}
+
+var colorsMore = []int{
+	31, 32, 33, 34, 35, 36, 37,
+	90, 91, 92, 93, 94, 95, 96, 97,
+}
+
 var color0 = "\u001b[0m"
 var color3 = "\u001b[3"
-var stack []byte
 
 var names []string
 var skips []string
@@ -44,27 +50,18 @@ func (dg *debugger) selectColor() *debugger {
 		hash = ((hash << 5) - hash) + int(charCodeAt(dg.namespace, index))
 		hash |= 0
 	}
-	dg.color = int(math.Abs(float64(hash))) % len(colors)
+	dg.color = colorsMore[int(math.Abs(float64(hash)))%len(colors)]
 	return dg
 }
 
-func (dg *debugger) setColorPrefix() *debugger {
+func (dg *debugger) setColorPrefix(stackInfo string) *debugger {
 	var colorPrefix string
-	if dg.color < 8 {
-		colorPrefix = color3 + strconv.Itoa(dg.color)
-	} else {
-		colorPrefix = color3 + "8;5;" + strconv.Itoa(dg.color)
-	}
-	tmp := indent(2) + colorPrefix + ";1m" + dg.namespace + color0 + indent(1)
-	dg.colorPrefix = tmp
+	colorPrefix = color3 + "8;5;" + strconv.Itoa(dg.color)
+	dg.colorPrefix = "  " + colorPrefix + ";1m" + dg.namespace + stackInfo + color0 + " "
 	return dg
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-func indent(num int) string {
-	return strings.Repeat(" ", num)
-}
-
 func charCodeAt(str string, pos int) rune {
 	i := 0
 	for _, value := range str {
@@ -95,9 +92,8 @@ func enable(namespace string) {
 	save(namespace)
 	re1 := regexp.MustCompile(`[\s,]+`)
 	re2 := regexp.MustCompile(ignoreCase("\\*"))
-	split := re1.FindAllString(namespace, -1)
+	split := re1.Split(namespace, -1)
 	for _, value := range split {
-		fmt.Println(value)
 		if value == "" {
 			continue
 		}
@@ -107,6 +103,10 @@ func enable(namespace string) {
 		} else {
 			names = append(names, "^"+str+"$")
 		}
+	}
+
+	for _, value := range instance {
+		value.enabled = enabled(value.namespace)
 	}
 }
 
@@ -137,18 +137,40 @@ func makeNewLine(format string) string {
 	return format
 }
 
+// =============================================================================
+func getPathInfo(project string) string {
+	_, file := path.Split(project)
+	if file != "" {
+		return strings.Split(file, " ")[0]
+	}
+	return file
+}
+
+func getFuncName(long string) string {
+	return strings.Split(long, ".")[1]
+}
+
+func buildRunInfo(where string, fname string) string {
+	return fmt.Sprintf(" [info:%s-%s]", where, fname)
+}
+
+// =============================================================================
+
 //NewDebugger new instance
 func NewDebugger(namespace string) func(format string, args ...interface{}) (int, error) {
 	var debug = &debugger{}
-	debug = debug.setName(namespace).selectColor().setColorPrefix()
+	debug = debug.setName(namespace).selectColor()
+	instance = append(instance, debug)
+	enable(load())
 	return func(format string, args ...interface{}) (int, error) {
-		debug.enabled = enabled(load())
 		if !debug.enabled {
 			return 0, nil
 		}
-		dbg.PrintStack()
+		/* Get call stack info */
+		split := strings.Split(string(dbg.Stack()), "\n")
+		stackInfo := buildRunInfo(getPathInfo(split[6]), getFuncName(split[5]))
+		debug = debug.setColorPrefix(stackInfo)
 		format = makeNewLine(debug.colorPrefix + format)
-		instance = append(instance, debug)
 		return fmt.Printf(format, args...)
 	}
 }
