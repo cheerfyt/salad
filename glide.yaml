@@ -1,0 +1,3 @@
+package: github.com/tate-fan/swgo
+import:
+- package: github.com/tate-fan/goms
