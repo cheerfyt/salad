@@ -1,4 +1,4 @@
-package swgo
+package salad
 
 import (
 	"os"
@@ -6,8 +6,9 @@ import (
 )
 
 func TestSave(t *testing.T) {
-	save("swgo:*")
-	if os.Getenv("SWGO") == "swgo:*" {
+	save("salad:*")
+
+	if os.Getenv("SALAD") == "salad:*" {
 		t.Log("save test Ok")
 	} else {
 		t.Error("save test fail")
@@ -15,8 +16,8 @@ func TestSave(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	save("swgo:app")
-	if load() == "swgo:app" {
+	save("salad:app")
+	if load() == "salad:app" {
 		t.Log("load test pass")
 	} else {
 		t.Error("load test fail")
@@ -24,7 +25,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestEnableSkip(t *testing.T) {
-	enable("swgo:-")
+	enable("salad:-")
 	if len(skips) > 0 {
 		t.Log("enable skips pass")
 	} else {
@@ -33,7 +34,7 @@ func TestEnableSkip(t *testing.T) {
 }
 
 func TestEnableNames(t *testing.T) {
-	enable("swgo:*")
+	enable("salad:*")
 	if len(names) > 0 {
 		t.Log("enable names pass")
 	} else {

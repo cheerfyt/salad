@@ -1,4 +1,4 @@
-package swgo
+package salad
 
 import (
 	"fmt"
@@ -81,11 +81,11 @@ func ignoreCase(re string) string {
 }
 
 func save(name string) error {
-	return os.Setenv("SWGO", name)
+	return os.Setenv("SALAD", name)
 }
 
 func load() string {
-	return os.Getenv("SWGO")
+	return os.Getenv("SALAD")
 }
 
 func enable(namespace string) {
