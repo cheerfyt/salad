@@ -25,7 +25,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestEnableSkip(t *testing.T) {
-	enable("salad:-")
+	enable("salad:*,-debug1")
 	if len(skips) > 0 {
 		t.Log("enable skips pass")
 	} else {
