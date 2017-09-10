@@ -1,0 +1,3 @@
+package: github.com/cheeryt/swgo
+import:
+- package: github.com/cheeryt/goms

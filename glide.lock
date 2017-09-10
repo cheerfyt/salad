@@ -1,0 +1,6 @@
+hash: 88106f2d68efc6b9d2466326d8050473c256b776139dab3fca62d6b13faf47b7
+updated: 2017-09-10T11:01:30.717324525+08:00
+imports:
+- name: github.com/cheeryt/goms
+  version: 3b0e3bfb60bdd6d9015ccfe3fa8d9ac54f5564b0
+testImports: []
