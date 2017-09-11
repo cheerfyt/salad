@@ -147,11 +147,12 @@ func getPathInfo(project string) string {
 }
 
 func getFuncName(long string) string {
-	return strings.Split(long, ".")[1]
+	return long[:len(long)-2]
 }
 
 func buildRunInfo(where string, fname string) string {
-	return fmt.Sprintf(" [info:%s-%s]", where, fname)
+	infos := strings.Split(where, ":")
+	return fmt.Sprintf("{file:%s, line: %s, func: %s}", infos[0], infos[1], fname)
 }
 
 // =============================================================================
@@ -169,7 +170,7 @@ func NewDebugger(namespace string) func(format string, args ...interface{}) (int
 		/* Get call stack info */
 		split := strings.Split(string(dbg.Stack()), "\n")
 		stackInfo := buildRunInfo(getPathInfo(split[6]), getFuncName(split[5]))
-		debug = debug.setColorPrefix(stackInfo)
+		debug = debug.setColorPrefix(" " + stackInfo)
 		format = makeNewLine(debug.colorPrefix + format)
 		return fmt.Printf(format, args...)
 	}
